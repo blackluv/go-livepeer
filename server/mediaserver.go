@@ -93,7 +93,8 @@ func NewLivepeerServer(rtmpAddr string, httpAddr string, lpNode *core.LivepeerNo
 }
 
 //StartServer starts the LPMS server
-func (s *LivepeerServer) StartMediaServer(ctx context.Context, maxPricePerSegment *big.Int, transcodingOptions string) error {
+func (s *LivepeerServer) StartMediaServer(ctx context.Context, maxPricePerSegment *big.Int, orchAddr string,
+	transcodingOptions string) error {
 	if s.LivepeerNode.Eth != nil {
 		BroadcastPrice = maxPricePerSegment
 		bProfiles := make([]ffmpeg.VideoProfile, 0)
@@ -108,7 +109,7 @@ func (s *LivepeerServer) StartMediaServer(ctx context.Context, maxPricePerSegmen
 	}
 
 	//LPMS handlers for handling RTMP video
-	s.LPMS.HandleRTMPPublish(createRTMPStreamIDHandler(s), gotRTMPStreamHandler(s), endRTMPStreamHandler(s))
+	s.LPMS.HandleRTMPPublish(createRTMPStreamIDHandler(s), gotRTMPStreamHandler(s, orchAddr), endRTMPStreamHandler(s))
 	s.LPMS.HandleRTMPPlay(getRTMPStreamHandler(s))
 
 	//LPMS hanlder for handling HLS video play
@@ -179,12 +180,14 @@ func (s *LivepeerServer) startBroadcast(transcoderAddress ethcommon.Address, job
 	return rpcBcast, nil
 }
 
-func gotRTMPStreamHandler(s *LivepeerServer) func(url *url.URL, rtmpStrm stream.RTMPVideoStream) (err error) {
+func gotRTMPStreamHandler(s *LivepeerServer, orchAddr string) func(url *url.URL, rtmpStrm stream.RTMPVideoStream) (err error) {
 	return func(url *url.URL, rtmpStrm stream.RTMPVideoStream) (err error) {
 		// For now, only allow a single stream
 		if len(s.rtmpStreams) > 0 {
 			return ErrAlreadyExists
 		}
+
+		// GET THE ORCHESTRATOR INFORMATION HERE, AND THEN PUT IT INTO STARTBROADCAST
 
 		s.VideoNonceLock.Lock()
 		nonce, ok := s.VideoNonce[rtmpStrm.GetStreamID()]

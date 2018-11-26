@@ -83,7 +83,7 @@ func main() {
 	initializeRound := flag.Bool("initializeRound", false, "Set to true if running as a transcoder and the node should automatically initialize new rounds")
 	s3bucket := flag.String("s3bucket", "", "S3 region/bucket (e.g. eu-central-1/testbucket)")
 	s3creds := flag.String("s3creds", "", "S3 credentials (in form ACCESSKEYID/ACCESSKEY)")
-
+	orchAddr := flag.String("orchAddr", "", "Orchestrator to connect to as a standalone transcoder")
 	version := flag.Bool("version", false, "Print out the version")
 	orchAddr := flag.String("orchAddr", "", "Orchestrator to connect to as a standalone transcoder")
 	orchSecret := flag.String("orchSecret", "", "Shared secret with the orchestrator as a standalone transcoder")
@@ -351,7 +351,7 @@ func main() {
 		close(wc)
 	}()
 	go func() {
-		ec <- s.StartMediaServer(msCtx, bigMaxPricePerSegment, *transcodingOptions)
+		ec <- s.StartMediaServer(msCtx, bigMaxPricePerSegment, *orchAddr, *transcodingOptions)
 	}()
 
 	go func() {
