@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/livepeer/go-livepeer/drivers"
-
-	"github.com/ethereum/go-ethereum/crypto"
-
 	"github.com/livepeer/go-livepeer/net"
+
+	ethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 var ErrNotFound = errors.New("ErrNotFound")
@@ -49,6 +49,12 @@ func (bcast *broadcaster) GetTranscoderInfo() *net.TranscoderInfo {
 }
 func (bcast *broadcaster) SetTranscoderInfo(t *net.TranscoderInfo) {
 	bcast.tinfo = t
+}
+func (bcast *broadcaster) Address() ethcommon.Address {
+	if bcast.node == nil || bcast.node.Eth == nil {
+		return ethcommon.Address{}
+	}
+	return bcast.node.Eth.Account().Address
 }
 func NewBroadcaster(node *LivepeerNode, jobId string) *broadcaster {
 	return &broadcaster{

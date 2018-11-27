@@ -65,6 +65,7 @@ type Orchestrator interface {
 }
 
 type Broadcaster interface {
+	Address() ethcommon.Address
 	Sign([]byte) ([]byte, error)
 	JobId() string
 	SetTranscoderInfo(*net.TranscoderInfo)
@@ -75,12 +76,12 @@ type Broadcaster interface {
 	GetBroadcasterOS() drivers.OSSession
 }
 
-func genTranscoderReq(b Broadcaster, jid string) (*net.TranscoderRequest, error) {
-	sig, err := b.Sign([]byte(fmt.Sprintf("%v", jid)))
+func genTranscoderReq(b Broadcaster) (*net.TranscoderRequest, error) {
+	sig, err := b.Sign([]byte(fmt.Sprintf("%v", b.Address().Hex())))
 	if err != nil {
 		return nil, err
 	}
-	return &net.TranscoderRequest{JobId: jid, Sig: sig}, nil
+	return &net.TranscoderRequest{Address: b.Address().Bytes(), Sig: sig}, nil
 }
 
 func CheckTranscoderAvailability(orch Orchestrator) bool {
@@ -92,7 +93,7 @@ func CheckTranscoderAvailability(orch Orchestrator) bool {
 
 	ping := crypto.Keccak256(ts_signature)
 
-	orch_client, conn, err := startOrchestratorClient(orch.ServiceURI().String())
+	orch_client, conn, err := startOrchestratorClient(orch.ServiceURI())
 	if err != nil {
 		return false
 	}
@@ -110,16 +111,7 @@ func CheckTranscoderAvailability(orch Orchestrator) bool {
 	return verifyMsgSig(orch.Address(), string(ping), pong.Value)
 }
 
-func startOrchestratorClient(url_string string) (net.OrchestratorClient, *grpc.ClientConn, error) {
-	uri, err := url.Parse(url_string)
-
-	if err != nil {
-		glog.Error("Could not parse orchestrator URI: ", err)
-		return nil, nil, err
-	}
-
-	tlsConfig := &tls.Config{InsecureSkipVerify: true}
-
+func startOrchestratorClient(uri *url.URL) (net.OrchestratorClient, *grpc.ClientConn, error) {
 	glog.Infof("Connecting RPC to %v", uri)
 	conn, err := grpc.Dial(uri.Host,
 		grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)),
@@ -157,17 +149,11 @@ func verifyMsgSig(addr ethcommon.Address, msg string, sig []byte) bool {
 	return eth.VerifySig(addr, crypto.Keccak256([]byte(msg)), sig)
 }
 
-func verifyTranscoderReq(orch Orchestrator, req *net.TranscoderRequest, jobId string) error {
-	// ANGIE - NEED TO GET TRANSCODER AND BROADCASTER ADDRESS FROM SOMEWHERE ELSE
-	// if orch.Address() != "0xD41A8977736D611BcD026C404A6c2aeAF901926D" {
-	// 	glog.Error("Transcoder was not assigned")
-	// 	return fmt.Errorf("Transcoder was not assigned")
-	// }
-
-	// if !verifyMsgSig(job.BroadcasterAddress, fmt.Sprintf("%v", jobId), req.Sig) {
-	// 	glog.Error("transcoder req sig check failed")
-	// 	return fmt.Errorf("transcoder req sig check failed")
-	// }
+func verifyTranscoderReq(orch Orchestrator, req *net.TranscoderRequest) error {
+	if !verifyMsgSig(ethcommon.BytesToAddress(req.Address), string(req.Address), req.Sig) {
+		glog.Error("transcoder req sig check failed")
+		return fmt.Errorf("transcoder req sig check failed")
+	}
 	return nil
 }
 
@@ -261,9 +247,9 @@ func ping(context context.Context, req *net.PingPong, orch Orchestrator) (*net.P
 }
 
 func getTranscoder(context context.Context, orch Orchestrator, req *net.TranscoderRequest) (*net.TranscoderInfo, error) {
-	jobId := req.JobId
+	jobId := ""                                         // jobId prob not needed here anymore
 	glog.Info("Got transcoder request for job ", jobId) // ANGIE - GET JOB/STREAMIDS FROM ELSEWHERE
-	if err := verifyTranscoderReq(orch, req, jobId); err != nil {
+	if err := verifyTranscoderReq(orch, req); err != nil {
 		return nil, fmt.Errorf("Invalid transcoder request (%v)", err)
 	}
 	creds, err := genToken(orch, jobId)
@@ -475,25 +461,24 @@ func StartTranscodeServer(orch Orchestrator, bind string, mux *http.ServeMux, wo
 	srv.ListenAndServeTLS(cert, key)
 }
 
-func StartBroadcastClient(bcast Broadcaster, orchestratorServer string) error {
+func GetOrchestratorInfo(bcast Broadcaster, orchestratorServer *url.URL) (*net.TranscoderInfo, error) {
 	c, conn, err := startOrchestratorClient(orchestratorServer)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer conn.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), GRPCTimeout)
 	defer cancel()
 
-	req, err := genTranscoderReq(bcast, bcast.JobId())
+	req, err := genTranscoderReq(bcast)
 	r, err := c.GetTranscoder(ctx, req)
 	if err != nil {
-		glog.Errorf("Could not get transcoder for job %d: %s", bcast.JobId(), err.Error())
-		return errors.New("Could not get transcoder: " + err.Error())
+		glog.Error("Could not get transcoder %v: %v", orchestratorServer, err)
+		return nil, errors.New("Could not get transcoder: " + err.Error())
 	}
-	bcast.SetTranscoderInfo(r)
 
-	return nil
+	return r, nil
 }
 
 func SubmitSegment(bcast Broadcaster, seg *stream.HLSSegment, nonce uint64) (*net.TranscodeData, error) {
