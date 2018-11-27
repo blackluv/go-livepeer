@@ -189,10 +189,14 @@ func main() {
 		n.NodeType = core.BroadcasterNode
 	}
 
-	if *orchAddr != "" {
-		n.OrchestratorSelector = discovery.NewOffchainOrchestrator(n, *orchAddr)
-		if n.OrchestratorSelector == nil {
-			return
+	if n.NodeType == core.BroadcasterNode {
+		if *orchAddr == "" {
+			glog.Info("No orchestrator specified; transcoding will not happen")
+		} else {
+			n.OrchestratorSelector = discovery.NewOffchainOrchestrator(n, *orchAddr)
+			if n.OrchestratorSelector == nil {
+				return
+			}
 		}
 	}
 
