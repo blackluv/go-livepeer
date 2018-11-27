@@ -25,6 +25,10 @@ type stubOrchestrator struct {
 	jobId string
 }
 
+func (r *stubOrchestrator) Address() *ethcommon.Address {
+	return nil
+}
+
 func (r *stubOrchestrator) JobId() string {
 	return "iamajobidstring"
 }

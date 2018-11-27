@@ -161,17 +161,14 @@ func (s *LivepeerServer) startBroadcast(transcoderAddress ethcommon.Address, job
 	}
 	rpcBcast := core.NewBroadcaster(s.LivepeerNode, jobId)
 
-	err = StartBroadcastClient(rpcBcast, serviceUri)
-	if err != nil {
-		glog.Error("Unable to start broadcast client for ", jobId)
-		if monitor.Enabled {
-			monitor.LogStartBroadcastClientFailed(nonce, serviceUri, tca.Hex(), jobId, err.Error())
-		}
+	tinfos, err := s.LivepeerNode.OrchestratorSelector.GetOrchestrators(1)
+	if len(tinfos) <= 0 || err != nil {
 		return nil, err
 	}
+	tinfo := tinfos[0]
+	rpcBcast.SetTranscoderInfo(tinfo)
 
 	// set OSes
-	tinfo := rpcBcast.GetTranscoderInfo()
 	if len(tinfo.Storage) > 0 {
 		transcodersIOS := drivers.NewSession(tinfo.Storage[0])
 		rpcBcast.SetOrchestratorOS(transcodersIOS)
