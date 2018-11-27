@@ -3,13 +3,12 @@
 
 package net
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
-
 import (
-	context "golang.org/x/net/context"
+	context "context"
+	fmt "fmt"
+	proto "github.com/golang/protobuf/proto"
 	grpc "google.golang.org/grpc"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -36,6 +35,7 @@ var OSInfo_StorageType_name = map[int32]string{
 	1: "S3",
 	2: "IPFS",
 }
+
 var OSInfo_StorageType_value = map[string]int32{
 	"DIRECT": 0,
 	"S3":     1,
@@ -45,8 +45,9 @@ var OSInfo_StorageType_value = map[string]int32{
 func (x OSInfo_StorageType) String() string {
 	return proto.EnumName(OSInfo_StorageType_name, int32(x))
 }
+
 func (OSInfo_StorageType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_lp_rpc_412722cd0dbfd47d, []int{2, 0}
+	return fileDescriptor_034e29c79f9ba827, []int{2, 0}
 }
 
 type PingPong struct {
@@ -61,16 +62,17 @@ func (m *PingPong) Reset()         { *m = PingPong{} }
 func (m *PingPong) String() string { return proto.CompactTextString(m) }
 func (*PingPong) ProtoMessage()    {}
 func (*PingPong) Descriptor() ([]byte, []int) {
-	return fileDescriptor_lp_rpc_412722cd0dbfd47d, []int{0}
+	return fileDescriptor_034e29c79f9ba827, []int{0}
 }
+
 func (m *PingPong) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PingPong.Unmarshal(m, b)
 }
 func (m *PingPong) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PingPong.Marshal(b, m, deterministic)
 }
-func (dst *PingPong) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PingPong.Merge(dst, src)
+func (m *PingPong) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PingPong.Merge(m, src)
 }
 func (m *PingPong) XXX_Size() int {
 	return xxx_messageInfo_PingPong.Size(m)
@@ -90,48 +92,49 @@ func (m *PingPong) GetValue() []byte {
 
 // This request is sent by the broadcaster in `GetTranscoder` to request
 // information on which transcoder to use.
-type TranscoderRequest struct {
-	// ID of the job that the broadcaster needs a transcoder for
-	JobId string `protobuf:"bytes,1,opt,name=jobId" json:"jobId,omitempty"`
-	// Broadcaster's signature over the jobId
+type OrchestratorRequest struct {
+	// Ethereum address of the broadcaster
+	Address []byte `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	// Broadcaster's signature over its address
 	Sig                  []byte   `protobuf:"bytes,2,opt,name=sig,proto3" json:"sig,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *TranscoderRequest) Reset()         { *m = TranscoderRequest{} }
-func (m *TranscoderRequest) String() string { return proto.CompactTextString(m) }
-func (*TranscoderRequest) ProtoMessage()    {}
-func (*TranscoderRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_lp_rpc_412722cd0dbfd47d, []int{1}
-}
-func (m *TranscoderRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_TranscoderRequest.Unmarshal(m, b)
-}
-func (m *TranscoderRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_TranscoderRequest.Marshal(b, m, deterministic)
-}
-func (dst *TranscoderRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TranscoderRequest.Merge(dst, src)
-}
-func (m *TranscoderRequest) XXX_Size() int {
-	return xxx_messageInfo_TranscoderRequest.Size(m)
-}
-func (m *TranscoderRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_TranscoderRequest.DiscardUnknown(m)
+func (m *OrchestratorRequest) Reset()         { *m = OrchestratorRequest{} }
+func (m *OrchestratorRequest) String() string { return proto.CompactTextString(m) }
+func (*OrchestratorRequest) ProtoMessage()    {}
+func (*OrchestratorRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_034e29c79f9ba827, []int{1}
 }
 
-var xxx_messageInfo_TranscoderRequest proto.InternalMessageInfo
+func (m *OrchestratorRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_OrchestratorRequest.Unmarshal(m, b)
+}
+func (m *OrchestratorRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_OrchestratorRequest.Marshal(b, m, deterministic)
+}
+func (m *OrchestratorRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OrchestratorRequest.Merge(m, src)
+}
+func (m *OrchestratorRequest) XXX_Size() int {
+	return xxx_messageInfo_OrchestratorRequest.Size(m)
+}
+func (m *OrchestratorRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_OrchestratorRequest.DiscardUnknown(m)
+}
 
-func (m *TranscoderRequest) GetJobId() string {
+var xxx_messageInfo_OrchestratorRequest proto.InternalMessageInfo
+
+func (m *OrchestratorRequest) GetAddress() []byte {
 	if m != nil {
-		return m.JobId
+		return m.Address
 	}
-	return ""
+	return nil
 }
 
-func (m *TranscoderRequest) GetSig() []byte {
+func (m *OrchestratorRequest) GetSig() []byte {
 	if m != nil {
 		return m.Sig
 	}
@@ -139,12 +142,12 @@ func (m *TranscoderRequest) GetSig() []byte {
 }
 
 //
-// OSInfo needed to negotiate storages that will be used.
-// It carries info needed to write to the storage.
+//OSInfo needed to negotiate storages that will be used.
+//It carries info needed to write to the storage.
 type OSInfo struct {
 	// Storage type: direct, s3, ipfs.
-	StorageType          OSInfo_StorageType `protobuf:"varint,1,opt,name=storageType,enum=net.OSInfo_StorageType" json:"storageType,omitempty"`
-	S3Info               *S3OSInfo          `protobuf:"bytes,16,opt,name=s3info" json:"s3info,omitempty"`
+	StorageType          OSInfo_StorageType `protobuf:"varint,1,opt,name=storageType,proto3,enum=net.OSInfo_StorageType" json:"storageType,omitempty"`
+	S3Info               *S3OSInfo          `protobuf:"bytes,16,opt,name=s3info,proto3" json:"s3info,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
 	XXX_unrecognized     []byte             `json:"-"`
 	XXX_sizecache        int32              `json:"-"`
@@ -154,16 +157,17 @@ func (m *OSInfo) Reset()         { *m = OSInfo{} }
 func (m *OSInfo) String() string { return proto.CompactTextString(m) }
 func (*OSInfo) ProtoMessage()    {}
 func (*OSInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_lp_rpc_412722cd0dbfd47d, []int{2}
+	return fileDescriptor_034e29c79f9ba827, []int{2}
 }
+
 func (m *OSInfo) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_OSInfo.Unmarshal(m, b)
 }
 func (m *OSInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_OSInfo.Marshal(b, m, deterministic)
 }
-func (dst *OSInfo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_OSInfo.Merge(dst, src)
+func (m *OSInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OSInfo.Merge(m, src)
 }
 func (m *OSInfo) XXX_Size() int {
 	return xxx_messageInfo_OSInfo.Size(m)
@@ -190,17 +194,17 @@ func (m *OSInfo) GetS3Info() *S3OSInfo {
 
 type S3OSInfo struct {
 	// Host to use to connect to S3
-	Host string `protobuf:"bytes,1,opt,name=host" json:"host,omitempty"`
+	Host string `protobuf:"bytes,1,opt,name=host,proto3" json:"host,omitempty"`
 	// Key (prefix) to use when uploading the object.
-	Key string `protobuf:"bytes,2,opt,name=key" json:"key,omitempty"`
+	Key string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 	// POST policy that S3 owner node creates to give write access to other node.
-	Policy string `protobuf:"bytes,3,opt,name=policy" json:"policy,omitempty"`
+	Policy string `protobuf:"bytes,3,opt,name=policy,proto3" json:"policy,omitempty"`
 	// Signature for POST policy.
-	Signature string `protobuf:"bytes,4,opt,name=signature" json:"signature,omitempty"`
+	Signature string `protobuf:"bytes,4,opt,name=signature,proto3" json:"signature,omitempty"`
 	// Needed for POST policy.
-	XAmzCredential string `protobuf:"bytes,5,opt,name=xAmzCredential" json:"xAmzCredential,omitempty"`
+	XAmzCredential string `protobuf:"bytes,5,opt,name=xAmzCredential,proto3" json:"xAmzCredential,omitempty"`
 	// Needed for POST policy.
-	XAmzDate             string   `protobuf:"bytes,6,opt,name=xAmzDate" json:"xAmzDate,omitempty"`
+	XAmzDate             string   `protobuf:"bytes,6,opt,name=xAmzDate,proto3" json:"xAmzDate,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -210,16 +214,17 @@ func (m *S3OSInfo) Reset()         { *m = S3OSInfo{} }
 func (m *S3OSInfo) String() string { return proto.CompactTextString(m) }
 func (*S3OSInfo) ProtoMessage()    {}
 func (*S3OSInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_lp_rpc_412722cd0dbfd47d, []int{3}
+	return fileDescriptor_034e29c79f9ba827, []int{3}
 }
+
 func (m *S3OSInfo) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_S3OSInfo.Unmarshal(m, b)
 }
 func (m *S3OSInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_S3OSInfo.Marshal(b, m, deterministic)
 }
-func (dst *S3OSInfo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_S3OSInfo.Merge(dst, src)
+func (m *S3OSInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_S3OSInfo.Merge(m, src)
 }
 func (m *S3OSInfo) XXX_Size() int {
 	return xxx_messageInfo_S3OSInfo.Size(m)
@@ -275,77 +280,69 @@ func (m *S3OSInfo) GetXAmzDate() string {
 // The orchestrator sends this in response to `GetTranscoder`, containing the
 // transcoder URI, associated credentials authorizing the broadcaster to
 // use the transcoder, and miscellaneous data related to the job.
-type TranscoderInfo struct {
+type OrchestratorInfo struct {
 	// URI of the transcoder to use for submitting segments.
-	Transcoder string `protobuf:"bytes,1,opt,name=transcoder" json:"transcoder,omitempty"`
+	Transcoder string `protobuf:"bytes,1,opt,name=transcoder,proto3" json:"transcoder,omitempty"`
 	// Signals the authentication method to expect within `credentials`. This
 	// field is opaque to the broadcaster, and should be passed to the transcoder.
-	AuthType string `protobuf:"bytes,2,opt,name=authType" json:"authType,omitempty"`
+	AuthType string `protobuf:"bytes,2,opt,name=authType,proto3" json:"authType,omitempty"`
 	// Credentials to verify the request has been authorized by an orchestrator.
 	// This field is opaque to the broadcaster.
-	Credentials string `protobuf:"bytes,3,opt,name=credentials" json:"credentials,omitempty"`
-	// Transcoded streamId list to update the master manifest on the broadcaster.
-	StreamIds map[string]string `protobuf:"bytes,16,rep,name=streamIds" json:"streamIds,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Credentials string `protobuf:"bytes,3,opt,name=credentials,proto3" json:"credentials,omitempty"`
 	// Orchestrator returns info about own input object storage, if it wants it to be used.
-	Storage              []*OSInfo `protobuf:"bytes,32,rep,name=storage" json:"storage,omitempty"`
+	Storage              []*OSInfo `protobuf:"bytes,32,rep,name=storage,proto3" json:"storage,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
 	XXX_unrecognized     []byte    `json:"-"`
 	XXX_sizecache        int32     `json:"-"`
 }
 
-func (m *TranscoderInfo) Reset()         { *m = TranscoderInfo{} }
-func (m *TranscoderInfo) String() string { return proto.CompactTextString(m) }
-func (*TranscoderInfo) ProtoMessage()    {}
-func (*TranscoderInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_lp_rpc_412722cd0dbfd47d, []int{4}
-}
-func (m *TranscoderInfo) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_TranscoderInfo.Unmarshal(m, b)
-}
-func (m *TranscoderInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_TranscoderInfo.Marshal(b, m, deterministic)
-}
-func (dst *TranscoderInfo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TranscoderInfo.Merge(dst, src)
-}
-func (m *TranscoderInfo) XXX_Size() int {
-	return xxx_messageInfo_TranscoderInfo.Size(m)
-}
-func (m *TranscoderInfo) XXX_DiscardUnknown() {
-	xxx_messageInfo_TranscoderInfo.DiscardUnknown(m)
+func (m *OrchestratorInfo) Reset()         { *m = OrchestratorInfo{} }
+func (m *OrchestratorInfo) String() string { return proto.CompactTextString(m) }
+func (*OrchestratorInfo) ProtoMessage()    {}
+func (*OrchestratorInfo) Descriptor() ([]byte, []int) {
+	return fileDescriptor_034e29c79f9ba827, []int{4}
 }
 
-var xxx_messageInfo_TranscoderInfo proto.InternalMessageInfo
+func (m *OrchestratorInfo) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_OrchestratorInfo.Unmarshal(m, b)
+}
+func (m *OrchestratorInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_OrchestratorInfo.Marshal(b, m, deterministic)
+}
+func (m *OrchestratorInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OrchestratorInfo.Merge(m, src)
+}
+func (m *OrchestratorInfo) XXX_Size() int {
+	return xxx_messageInfo_OrchestratorInfo.Size(m)
+}
+func (m *OrchestratorInfo) XXX_DiscardUnknown() {
+	xxx_messageInfo_OrchestratorInfo.DiscardUnknown(m)
+}
 
-func (m *TranscoderInfo) GetTranscoder() string {
+var xxx_messageInfo_OrchestratorInfo proto.InternalMessageInfo
+
+func (m *OrchestratorInfo) GetTranscoder() string {
 	if m != nil {
 		return m.Transcoder
 	}
 	return ""
 }
 
-func (m *TranscoderInfo) GetAuthType() string {
+func (m *OrchestratorInfo) GetAuthType() string {
 	if m != nil {
 		return m.AuthType
 	}
 	return ""
 }
 
-func (m *TranscoderInfo) GetCredentials() string {
+func (m *OrchestratorInfo) GetCredentials() string {
 	if m != nil {
 		return m.Credentials
 	}
 	return ""
 }
 
-func (m *TranscoderInfo) GetStreamIds() map[string]string {
-	if m != nil {
-		return m.StreamIds
-	}
-	return nil
-}
-
-func (m *TranscoderInfo) GetStorage() []*OSInfo {
+func (m *OrchestratorInfo) GetStorage() []*OSInfo {
 	if m != nil {
 		return m.Storage
 	}
@@ -358,7 +355,7 @@ func (m *TranscoderInfo) GetStorage() []*OSInfo {
 type AuthToken struct {
 	// Signature of the orchestrator over the remaining fields
 	Sig                  []byte   `protobuf:"bytes,1,opt,name=sig,proto3" json:"sig,omitempty"`
-	JobId                string   `protobuf:"bytes,16,opt,name=jobId" json:"jobId,omitempty"`
+	JobId                string   `protobuf:"bytes,16,opt,name=jobId,proto3" json:"jobId,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -368,16 +365,17 @@ func (m *AuthToken) Reset()         { *m = AuthToken{} }
 func (m *AuthToken) String() string { return proto.CompactTextString(m) }
 func (*AuthToken) ProtoMessage()    {}
 func (*AuthToken) Descriptor() ([]byte, []int) {
-	return fileDescriptor_lp_rpc_412722cd0dbfd47d, []int{5}
+	return fileDescriptor_034e29c79f9ba827, []int{5}
 }
+
 func (m *AuthToken) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AuthToken.Unmarshal(m, b)
 }
 func (m *AuthToken) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_AuthToken.Marshal(b, m, deterministic)
 }
-func (dst *AuthToken) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AuthToken.Merge(dst, src)
+func (m *AuthToken) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AuthToken.Merge(m, src)
 }
 func (m *AuthToken) XXX_Size() int {
 	return xxx_messageInfo_AuthToken.Size(m)
@@ -404,15 +402,20 @@ func (m *AuthToken) GetJobId() string {
 
 // Data included by the broadcaster when submitting a segment for transcoding.
 type SegData struct {
+	// Manifest ID this segment belongs to
+	ManifestId []byte `protobuf:"bytes,1,opt,name=manifestId,proto3" json:"manifestId,omitempty"`
 	// Sequence number of the segment to be transcoded
-	Seq int64 `protobuf:"varint,1,opt,name=seq" json:"seq,omitempty"`
+	Seq int64 `protobuf:"varint,2,opt,name=seq,proto3" json:"seq,omitempty"`
 	// Hash of the segment data to be transcoded
-	Hash []byte `protobuf:"bytes,2,opt,name=hash,proto3" json:"hash,omitempty"`
+	Hash []byte `protobuf:"bytes,3,opt,name=hash,proto3" json:"hash,omitempty"`
+	// Transcoding profiles to use
+	Profiles []byte `protobuf:"bytes,4,opt,name=profiles,proto3" json:"profiles,omitempty"`
 	// Broadcaster signature for the segment. Corresponds to:
-	// broadcaster.sign(streamId | seqNo | dataHash)
-	// where streamId is derived from the jobId
-	Sig                  []byte    `protobuf:"bytes,3,opt,name=sig,proto3" json:"sig,omitempty"`
-	Storage              []*OSInfo `protobuf:"bytes,4,rep,name=storage" json:"storage,omitempty"`
+	// broadcaster.sign(manifestId | seqNo | dataHash | profiles)
+	Sig []byte `protobuf:"bytes,5,opt,name=sig,proto3" json:"sig,omitempty"`
+	// Broadcaster's preferred storage medium(s)
+	// XXX should we include this in a sig somewhere until certs are authenticated?
+	Storage              []*OSInfo `protobuf:"bytes,32,rep,name=storage,proto3" json:"storage,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
 	XXX_unrecognized     []byte    `json:"-"`
 	XXX_sizecache        int32     `json:"-"`
@@ -422,16 +425,17 @@ func (m *SegData) Reset()         { *m = SegData{} }
 func (m *SegData) String() string { return proto.CompactTextString(m) }
 func (*SegData) ProtoMessage()    {}
 func (*SegData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_lp_rpc_412722cd0dbfd47d, []int{6}
+	return fileDescriptor_034e29c79f9ba827, []int{6}
 }
+
 func (m *SegData) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SegData.Unmarshal(m, b)
 }
 func (m *SegData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_SegData.Marshal(b, m, deterministic)
 }
-func (dst *SegData) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SegData.Merge(dst, src)
+func (m *SegData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SegData.Merge(m, src)
 }
 func (m *SegData) XXX_Size() int {
 	return xxx_messageInfo_SegData.Size(m)
@@ -441,6 +445,13 @@ func (m *SegData) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_SegData proto.InternalMessageInfo
+
+func (m *SegData) GetManifestId() []byte {
+	if m != nil {
+		return m.ManifestId
+	}
+	return nil
+}
 
 func (m *SegData) GetSeq() int64 {
 	if m != nil {
@@ -452,6 +463,13 @@ func (m *SegData) GetSeq() int64 {
 func (m *SegData) GetHash() []byte {
 	if m != nil {
 		return m.Hash
+	}
+	return nil
+}
+
+func (m *SegData) GetProfiles() []byte {
+	if m != nil {
+		return m.Profiles
 	}
 	return nil
 }
@@ -473,7 +491,7 @@ func (m *SegData) GetStorage() []*OSInfo {
 // Individual transcoded segment data.
 type TranscodedSegmentData struct {
 	// URL where the transcoded data can be downloaded from.
-	Url                  string   `protobuf:"bytes,1,opt,name=url" json:"url,omitempty"`
+	Url                  string   `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -483,16 +501,17 @@ func (m *TranscodedSegmentData) Reset()         { *m = TranscodedSegmentData{} }
 func (m *TranscodedSegmentData) String() string { return proto.CompactTextString(m) }
 func (*TranscodedSegmentData) ProtoMessage()    {}
 func (*TranscodedSegmentData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_lp_rpc_412722cd0dbfd47d, []int{7}
+	return fileDescriptor_034e29c79f9ba827, []int{7}
 }
+
 func (m *TranscodedSegmentData) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TranscodedSegmentData.Unmarshal(m, b)
 }
 func (m *TranscodedSegmentData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_TranscodedSegmentData.Marshal(b, m, deterministic)
 }
-func (dst *TranscodedSegmentData) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TranscodedSegmentData.Merge(dst, src)
+func (m *TranscodedSegmentData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TranscodedSegmentData.Merge(m, src)
 }
 func (m *TranscodedSegmentData) XXX_Size() int {
 	return xxx_messageInfo_TranscodedSegmentData.Size(m)
@@ -513,7 +532,7 @@ func (m *TranscodedSegmentData) GetUrl() string {
 // A set of transcoded segments following the profiles specified in the job.
 type TranscodeData struct {
 	// Transcoded data, in the order specified in the job options
-	Segments []*TranscodedSegmentData `protobuf:"bytes,1,rep,name=segments" json:"segments,omitempty"`
+	Segments []*TranscodedSegmentData `protobuf:"bytes,1,rep,name=segments,proto3" json:"segments,omitempty"`
 	// Signature of the hash of the concatenated hashes
 	Sig                  []byte   `protobuf:"bytes,2,opt,name=sig,proto3" json:"sig,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -525,16 +544,17 @@ func (m *TranscodeData) Reset()         { *m = TranscodeData{} }
 func (m *TranscodeData) String() string { return proto.CompactTextString(m) }
 func (*TranscodeData) ProtoMessage()    {}
 func (*TranscodeData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_lp_rpc_412722cd0dbfd47d, []int{8}
+	return fileDescriptor_034e29c79f9ba827, []int{8}
 }
+
 func (m *TranscodeData) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TranscodeData.Unmarshal(m, b)
 }
 func (m *TranscodeData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_TranscodeData.Marshal(b, m, deterministic)
 }
-func (dst *TranscodeData) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TranscodeData.Merge(dst, src)
+func (m *TranscodeData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TranscodeData.Merge(m, src)
 }
 func (m *TranscodeData) XXX_Size() int {
 	return xxx_messageInfo_TranscodeData.Size(m)
@@ -562,7 +582,7 @@ func (m *TranscodeData) GetSig() []byte {
 // Response that a transcoder sends after transcoding a segment.
 type TranscodeResult struct {
 	// Sequence number of the transcoded results.
-	Seq int64 `protobuf:"varint,1,opt,name=seq" json:"seq,omitempty"`
+	Seq int64 `protobuf:"varint,1,opt,name=seq,proto3" json:"seq,omitempty"`
 	// Result of transcoding can be an error, or successful with more info
 	//
 	// Types that are valid to be assigned to Result:
@@ -578,16 +598,17 @@ func (m *TranscodeResult) Reset()         { *m = TranscodeResult{} }
 func (m *TranscodeResult) String() string { return proto.CompactTextString(m) }
 func (*TranscodeResult) ProtoMessage()    {}
 func (*TranscodeResult) Descriptor() ([]byte, []int) {
-	return fileDescriptor_lp_rpc_412722cd0dbfd47d, []int{9}
+	return fileDescriptor_034e29c79f9ba827, []int{9}
 }
+
 func (m *TranscodeResult) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TranscodeResult.Unmarshal(m, b)
 }
 func (m *TranscodeResult) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_TranscodeResult.Marshal(b, m, deterministic)
 }
-func (dst *TranscodeResult) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TranscodeResult.Merge(dst, src)
+func (m *TranscodeResult) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TranscodeResult.Merge(m, src)
 }
 func (m *TranscodeResult) XXX_Size() int {
 	return xxx_messageInfo_TranscodeResult.Size(m)
@@ -598,32 +619,34 @@ func (m *TranscodeResult) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_TranscodeResult proto.InternalMessageInfo
 
+func (m *TranscodeResult) GetSeq() int64 {
+	if m != nil {
+		return m.Seq
+	}
+	return 0
+}
+
 type isTranscodeResult_Result interface {
 	isTranscodeResult_Result()
 }
 
 type TranscodeResult_Error struct {
-	Error string `protobuf:"bytes,2,opt,name=error,oneof"`
+	Error string `protobuf:"bytes,2,opt,name=error,proto3,oneof"`
 }
+
 type TranscodeResult_Data struct {
-	Data *TranscodeData `protobuf:"bytes,3,opt,name=data,oneof"`
+	Data *TranscodeData `protobuf:"bytes,3,opt,name=data,proto3,oneof"`
 }
 
 func (*TranscodeResult_Error) isTranscodeResult_Result() {}
-func (*TranscodeResult_Data) isTranscodeResult_Result()  {}
+
+func (*TranscodeResult_Data) isTranscodeResult_Result() {}
 
 func (m *TranscodeResult) GetResult() isTranscodeResult_Result {
 	if m != nil {
 		return m.Result
 	}
 	return nil
-}
-
-func (m *TranscodeResult) GetSeq() int64 {
-	if m != nil {
-		return m.Seq
-	}
-	return 0
 }
 
 func (m *TranscodeResult) GetError() string {
@@ -713,7 +736,7 @@ func _TranscodeResult_OneofSizer(msg proto.Message) (n int) {
 // Sent by the transcoder to register itself to the orchestrator.
 type RegisterRequest struct {
 	// Shared secret for auth
-	Secret               string   `protobuf:"bytes,1,opt,name=secret" json:"secret,omitempty"`
+	Secret               string   `protobuf:"bytes,1,opt,name=secret,proto3" json:"secret,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -723,16 +746,17 @@ func (m *RegisterRequest) Reset()         { *m = RegisterRequest{} }
 func (m *RegisterRequest) String() string { return proto.CompactTextString(m) }
 func (*RegisterRequest) ProtoMessage()    {}
 func (*RegisterRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_lp_rpc_412722cd0dbfd47d, []int{10}
+	return fileDescriptor_034e29c79f9ba827, []int{10}
 }
+
 func (m *RegisterRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_RegisterRequest.Unmarshal(m, b)
 }
 func (m *RegisterRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_RegisterRequest.Marshal(b, m, deterministic)
 }
-func (dst *RegisterRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_RegisterRequest.Merge(dst, src)
+func (m *RegisterRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RegisterRequest.Merge(m, src)
 }
 func (m *RegisterRequest) XXX_Size() int {
 	return xxx_messageInfo_RegisterRequest.Size(m)
@@ -752,8 +776,8 @@ func (m *RegisterRequest) GetSecret() string {
 
 // Sent by the transcoder
 type NotifySegment struct {
-	Url                  string   `protobuf:"bytes,1,opt,name=url" json:"url,omitempty"`
-	TaskId               int64    `protobuf:"varint,16,opt,name=taskId" json:"taskId,omitempty"`
+	Url                  string   `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	TaskId               int64    `protobuf:"varint,16,opt,name=taskId,proto3" json:"taskId,omitempty"`
 	Profiles             []byte   `protobuf:"bytes,17,opt,name=profiles,proto3" json:"profiles,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -764,16 +788,17 @@ func (m *NotifySegment) Reset()         { *m = NotifySegment{} }
 func (m *NotifySegment) String() string { return proto.CompactTextString(m) }
 func (*NotifySegment) ProtoMessage()    {}
 func (*NotifySegment) Descriptor() ([]byte, []int) {
-	return fileDescriptor_lp_rpc_412722cd0dbfd47d, []int{11}
+	return fileDescriptor_034e29c79f9ba827, []int{11}
 }
+
 func (m *NotifySegment) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_NotifySegment.Unmarshal(m, b)
 }
 func (m *NotifySegment) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_NotifySegment.Marshal(b, m, deterministic)
 }
-func (dst *NotifySegment) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_NotifySegment.Merge(dst, src)
+func (m *NotifySegment) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NotifySegment.Merge(m, src)
 }
 func (m *NotifySegment) XXX_Size() int {
 	return xxx_messageInfo_NotifySegment.Size(m)
@@ -806,12 +831,12 @@ func (m *NotifySegment) GetProfiles() []byte {
 }
 
 func init() {
+	proto.RegisterEnum("net.OSInfo_StorageType", OSInfo_StorageType_name, OSInfo_StorageType_value)
 	proto.RegisterType((*PingPong)(nil), "net.PingPong")
-	proto.RegisterType((*TranscoderRequest)(nil), "net.TranscoderRequest")
+	proto.RegisterType((*OrchestratorRequest)(nil), "net.OrchestratorRequest")
 	proto.RegisterType((*OSInfo)(nil), "net.OSInfo")
 	proto.RegisterType((*S3OSInfo)(nil), "net.S3OSInfo")
-	proto.RegisterType((*TranscoderInfo)(nil), "net.TranscoderInfo")
-	proto.RegisterMapType((map[string]string)(nil), "net.TranscoderInfo.StreamIdsEntry")
+	proto.RegisterType((*OrchestratorInfo)(nil), "net.OrchestratorInfo")
 	proto.RegisterType((*AuthToken)(nil), "net.AuthToken")
 	proto.RegisterType((*SegData)(nil), "net.SegData")
 	proto.RegisterType((*TranscodedSegmentData)(nil), "net.TranscodedSegmentData")
@@ -819,7 +844,55 @@ func init() {
 	proto.RegisterType((*TranscodeResult)(nil), "net.TranscodeResult")
 	proto.RegisterType((*RegisterRequest)(nil), "net.RegisterRequest")
 	proto.RegisterType((*NotifySegment)(nil), "net.NotifySegment")
-	proto.RegisterEnum("net.OSInfo_StorageType", OSInfo_StorageType_name, OSInfo_StorageType_value)
+}
+
+func init() { proto.RegisterFile("net/lp_rpc.proto", fileDescriptor_034e29c79f9ba827) }
+
+var fileDescriptor_034e29c79f9ba827 = []byte{
+	// 687 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x54, 0x4d, 0x6f, 0xd3, 0x4c,
+	0x10, 0xae, 0x9b, 0xc4, 0x4d, 0xc6, 0x69, 0xeb, 0x77, 0xdf, 0xb6, 0x58, 0x11, 0x42, 0x91, 0x45,
+	0x51, 0x2a, 0xa4, 0x80, 0x12, 0x09, 0x89, 0x1b, 0xfd, 0x00, 0x9a, 0x4b, 0x5b, 0xad, 0xc3, 0x81,
+	0x13, 0xda, 0xc6, 0x13, 0xc7, 0xd4, 0xf5, 0xa6, 0xbb, 0x1b, 0xd4, 0xf0, 0x47, 0xf8, 0x03, 0x9c,
+	0xf8, 0x95, 0x68, 0xd7, 0x1f, 0x71, 0xda, 0x1e, 0xb8, 0xcd, 0x33, 0x3b, 0x33, 0x3b, 0xf3, 0x3c,
+	0x3b, 0x0b, 0x6e, 0x8a, 0xea, 0x4d, 0x32, 0xff, 0x26, 0xe6, 0x93, 0xfe, 0x5c, 0x70, 0xc5, 0x49,
+	0x2d, 0x45, 0xe5, 0x77, 0xa1, 0x79, 0x15, 0xa7, 0xd1, 0x15, 0x4f, 0x23, 0xb2, 0x07, 0x8d, 0x1f,
+	0x2c, 0x59, 0xa0, 0x67, 0x75, 0xad, 0x5e, 0x9b, 0x66, 0xc0, 0x3f, 0x86, 0xff, 0x2f, 0xc5, 0x64,
+	0x86, 0x52, 0x09, 0xa6, 0xb8, 0xa0, 0x78, 0xb7, 0x40, 0xa9, 0x88, 0x07, 0x5b, 0x2c, 0x0c, 0x05,
+	0x4a, 0x99, 0x87, 0x17, 0x90, 0xb8, 0x50, 0x93, 0x71, 0xe4, 0x6d, 0x1a, 0xaf, 0x36, 0xfd, 0x5f,
+	0x16, 0xd8, 0x97, 0xc1, 0x28, 0x9d, 0x72, 0xf2, 0x1e, 0x1c, 0xa9, 0xb8, 0x60, 0x11, 0x8e, 0x97,
+	0xf3, 0xec, 0xa6, 0x9d, 0xc1, 0xb3, 0x7e, 0x8a, 0xaa, 0x9f, 0x45, 0xf4, 0x83, 0xd5, 0x31, 0xad,
+	0xc6, 0x92, 0x43, 0xb0, 0xe5, 0x30, 0x4e, 0xa7, 0xdc, 0x73, 0xbb, 0x56, 0xcf, 0x19, 0x6c, 0x9b,
+	0xac, 0x60, 0x98, 0xe5, 0xd1, 0xfc, 0xd0, 0x7f, 0x0d, 0x4e, 0xa5, 0x04, 0x01, 0xb0, 0xcf, 0x46,
+	0xf4, 0xe3, 0xe9, 0xd8, 0xdd, 0x20, 0x36, 0x6c, 0x06, 0x43, 0xd7, 0x22, 0x4d, 0xa8, 0x8f, 0xae,
+	0x3e, 0x05, 0xee, 0xa6, 0xff, 0xc7, 0x82, 0x66, 0x51, 0x81, 0x10, 0xa8, 0xcf, 0xb8, 0x54, 0xa6,
+	0xa9, 0x16, 0x35, 0xb6, 0x1e, 0xe6, 0x06, 0x97, 0x66, 0x98, 0x16, 0xd5, 0x26, 0x39, 0x00, 0x7b,
+	0xce, 0x93, 0x78, 0xb2, 0xf4, 0x6a, 0xc6, 0x99, 0x23, 0xf2, 0x1c, 0x5a, 0x32, 0x8e, 0x52, 0xa6,
+	0x16, 0x02, 0xbd, 0xba, 0x39, 0x5a, 0x39, 0xc8, 0x2b, 0xd8, 0xb9, 0x3f, 0xbe, 0xfd, 0x79, 0x2a,
+	0x30, 0xc4, 0x54, 0xc5, 0x2c, 0xf1, 0x1a, 0x26, 0xe4, 0x81, 0x97, 0x74, 0xa0, 0xa9, 0x3d, 0x67,
+	0x4c, 0xa1, 0x67, 0x9b, 0x88, 0x12, 0x6b, 0x1a, 0xdd, 0xaa, 0x14, 0xa6, 0xe9, 0x17, 0x00, 0x4a,
+	0xb0, 0x54, 0x4e, 0x78, 0x88, 0x22, 0x6f, 0xbd, 0xe2, 0xd1, 0x05, 0xd9, 0x42, 0xcd, 0x0c, 0xdb,
+	0xd9, 0x14, 0x25, 0x26, 0x5d, 0x70, 0x26, 0xe5, 0xd5, 0x32, 0x9f, 0xa7, 0xea, 0x22, 0x87, 0xb0,
+	0x95, 0x4b, 0xe0, 0x75, 0xbb, 0xb5, 0x9e, 0x33, 0x70, 0x2a, 0x52, 0xd1, 0xe2, 0xcc, 0x1f, 0x42,
+	0xeb, 0x58, 0x17, 0xe5, 0x37, 0x98, 0x16, 0xfa, 0x5b, 0xa5, 0xfe, 0xfa, 0x61, 0x7d, 0xe7, 0xd7,
+	0xa3, 0xd0, 0x08, 0xd7, 0xa2, 0x19, 0xf0, 0x7f, 0x5b, 0xb0, 0x15, 0x60, 0x74, 0xc6, 0x14, 0xd3,
+	0x53, 0xdc, 0xb2, 0x34, 0x9e, 0xa2, 0x54, 0xa3, 0x30, 0x4f, 0xad, 0x78, 0x4c, 0x4d, 0xbc, 0x33,
+	0x03, 0xd4, 0xa8, 0x36, 0x8d, 0x58, 0x4c, 0xce, 0x4c, 0xd3, 0x6d, 0x6a, 0x6c, 0x3d, 0xeb, 0x5c,
+	0xf0, 0x69, 0x9c, 0xa0, 0x34, 0x0a, 0xb4, 0x69, 0x89, 0x8b, 0xae, 0x1a, 0xab, 0xae, 0xfe, 0x71,
+	0xb6, 0x23, 0xd8, 0x1f, 0x17, 0x74, 0x86, 0x01, 0x46, 0xb7, 0x98, 0x2a, 0xd3, 0xb3, 0x0b, 0xb5,
+	0x85, 0x48, 0x72, 0xca, 0xb5, 0xe9, 0x7f, 0x85, 0xed, 0x32, 0xd4, 0x84, 0xbc, 0x83, 0xa6, 0xcc,
+	0x32, 0xf4, 0x96, 0xe8, 0x3b, 0x3a, 0xe6, 0x8e, 0x27, 0x0b, 0xd2, 0x32, 0xf6, 0x89, 0x15, 0xe2,
+	0xb0, 0x5b, 0x26, 0x51, 0x94, 0x8b, 0x44, 0x15, 0x9c, 0x58, 0x2b, 0x4e, 0x0e, 0xa0, 0x81, 0x42,
+	0x70, 0x91, 0x09, 0x7d, 0xbe, 0x41, 0x33, 0x48, 0x7a, 0x50, 0x0f, 0x99, 0x62, 0x86, 0x2b, 0x67,
+	0x40, 0xd6, 0x5b, 0xd0, 0x57, 0x9f, 0x6f, 0x50, 0x13, 0x71, 0xd2, 0x04, 0x5b, 0x98, 0xea, 0xfe,
+	0x11, 0xec, 0x52, 0x8c, 0x62, 0xa9, 0xb0, 0x5c, 0xf9, 0x03, 0xb0, 0x25, 0x4e, 0x04, 0x16, 0x1b,
+	0x92, 0x23, 0xff, 0x0b, 0x6c, 0x5f, 0x70, 0x15, 0x4f, 0x97, 0xf9, 0x30, 0x8f, 0x99, 0xd1, 0xa9,
+	0x8a, 0xc9, 0x9b, 0xfc, 0x09, 0xd4, 0x68, 0x8e, 0xd6, 0x14, 0xfb, 0x6f, 0x5d, 0xb1, 0xc1, 0x3d,
+	0xb4, 0xab, 0xaf, 0x9d, 0x9c, 0xc0, 0xee, 0x67, 0x54, 0x6b, 0x2e, 0x2f, 0x53, 0xec, 0xf1, 0xf7,
+	0xd4, 0xd9, 0x7f, 0x74, 0x62, 0xb6, 0xe5, 0x25, 0xd4, 0xf5, 0x77, 0x47, 0xb2, 0xbf, 0xa3, 0xf8,
+	0xf9, 0x3a, 0xeb, 0x70, 0x70, 0x01, 0x30, 0x5e, 0x6d, 0xd0, 0x07, 0x20, 0x05, 0x13, 0x15, 0xef,
+	0x9e, 0x49, 0x79, 0x40, 0x51, 0x27, 0xe3, 0x76, 0x8d, 0x8d, 0xb7, 0xd6, 0xb5, 0x6d, 0x3e, 0xdc,
+	0xe1, 0xdf, 0x00, 0x00, 0x00, 0xff, 0xff, 0x31, 0xdd, 0xf8, 0xfb, 0x84, 0x05, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -835,7 +908,7 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type OrchestratorClient interface {
 	// Called by the broadcaster to request transcoder info from an orchestrator.
-	GetTranscoder(ctx context.Context, in *TranscoderRequest, opts ...grpc.CallOption) (*TranscoderInfo, error)
+	GetOrchestrator(ctx context.Context, in *OrchestratorRequest, opts ...grpc.CallOption) (*OrchestratorInfo, error)
 	Ping(ctx context.Context, in *PingPong, opts ...grpc.CallOption) (*PingPong, error)
 }
 
@@ -847,9 +920,9 @@ func NewOrchestratorClient(cc *grpc.ClientConn) OrchestratorClient {
 	return &orchestratorClient{cc}
 }
 
-func (c *orchestratorClient) GetTranscoder(ctx context.Context, in *TranscoderRequest, opts ...grpc.CallOption) (*TranscoderInfo, error) {
-	out := new(TranscoderInfo)
-	err := c.cc.Invoke(ctx, "/net.Orchestrator/GetTranscoder", in, out, opts...)
+func (c *orchestratorClient) GetOrchestrator(ctx context.Context, in *OrchestratorRequest, opts ...grpc.CallOption) (*OrchestratorInfo, error) {
+	out := new(OrchestratorInfo)
+	err := c.cc.Invoke(ctx, "/net.Orchestrator/GetOrchestrator", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -868,7 +941,7 @@ func (c *orchestratorClient) Ping(ctx context.Context, in *PingPong, opts ...grp
 // OrchestratorServer is the server API for Orchestrator service.
 type OrchestratorServer interface {
 	// Called by the broadcaster to request transcoder info from an orchestrator.
-	GetTranscoder(context.Context, *TranscoderRequest) (*TranscoderInfo, error)
+	GetOrchestrator(context.Context, *OrchestratorRequest) (*OrchestratorInfo, error)
 	Ping(context.Context, *PingPong) (*PingPong, error)
 }
 
@@ -876,20 +949,20 @@ func RegisterOrchestratorServer(s *grpc.Server, srv OrchestratorServer) {
 	s.RegisterService(&_Orchestrator_serviceDesc, srv)
 }
 
-func _Orchestrator_GetTranscoder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TranscoderRequest)
+func _Orchestrator_GetOrchestrator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OrchestratorRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).GetTranscoder(ctx, in)
+		return srv.(OrchestratorServer).GetOrchestrator(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/net.Orchestrator/GetTranscoder",
+		FullMethod: "/net.Orchestrator/GetOrchestrator",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).GetTranscoder(ctx, req.(*TranscoderRequest))
+		return srv.(OrchestratorServer).GetOrchestrator(ctx, req.(*OrchestratorRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -917,8 +990,8 @@ var _Orchestrator_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*OrchestratorServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetTranscoder",
-			Handler:    _Orchestrator_GetTranscoder_Handler,
+			MethodName: "GetOrchestrator",
+			Handler:    _Orchestrator_GetOrchestrator_Handler,
 		},
 		{
 			MethodName: "Ping",
@@ -1022,55 +1095,4 @@ var _Transcoder_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Metadata: "net/lp_rpc.proto",
-}
-
-func init() { proto.RegisterFile("net/lp_rpc.proto", fileDescriptor_lp_rpc_412722cd0dbfd47d) }
-
-var fileDescriptor_lp_rpc_412722cd0dbfd47d = []byte{
-	// 705 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x54, 0x5d, 0x4f, 0xdb, 0x4a,
-	0x10, 0xc5, 0x49, 0x30, 0xc9, 0x98, 0x04, 0xb3, 0x97, 0x9b, 0x6b, 0x45, 0x57, 0x57, 0x91, 0x75,
-	0xa9, 0x82, 0x2a, 0xa5, 0x55, 0x22, 0x55, 0xfd, 0xe0, 0x01, 0x0a, 0xb4, 0xe4, 0x05, 0xd0, 0x9a,
-	0x3e, 0xf4, 0xa9, 0x5a, 0x92, 0x89, 0xe3, 0x62, 0xbc, 0x61, 0x77, 0x5d, 0x35, 0xfd, 0x1f, 0x55,
-	0xff, 0x43, 0x7f, 0x65, 0xe5, 0xf5, 0x67, 0x28, 0x7d, 0xdb, 0x99, 0x9d, 0x33, 0xb3, 0xe7, 0xec,
-	0xd9, 0x05, 0x3b, 0x42, 0xf5, 0x2c, 0x5c, 0x7e, 0x12, 0xcb, 0xe9, 0x70, 0x29, 0xb8, 0xe2, 0xa4,
-	0x1e, 0xa1, 0x72, 0xfb, 0xd0, 0xbc, 0x0a, 0x22, 0xff, 0x8a, 0x47, 0x3e, 0xd9, 0x83, 0xcd, 0x2f,
-	0x2c, 0x8c, 0xd1, 0x31, 0xfa, 0xc6, 0x60, 0x9b, 0xa6, 0x81, 0xfb, 0x06, 0x76, 0xaf, 0x05, 0x8b,
-	0xe4, 0x94, 0xcf, 0x50, 0x50, 0xbc, 0x8f, 0x51, 0xaa, 0xa4, 0xf4, 0x33, 0xbf, 0x99, 0xcc, 0x74,
-	0x69, 0x8b, 0xa6, 0x01, 0xb1, 0xa1, 0x2e, 0x03, 0xdf, 0xa9, 0x69, 0x78, 0xb2, 0x74, 0x7f, 0x18,
-	0x60, 0x5e, 0x7a, 0x93, 0x68, 0xce, 0xc9, 0x2b, 0xb0, 0xa4, 0xe2, 0x82, 0xf9, 0x78, 0xbd, 0x5a,
-	0xa6, 0x33, 0x3a, 0xa3, 0x7f, 0x86, 0x11, 0xaa, 0x61, 0x5a, 0x31, 0xf4, 0xca, 0x6d, 0x5a, 0xad,
-	0x25, 0xfb, 0x60, 0xca, 0x71, 0x10, 0xcd, 0xb9, 0x63, 0xf7, 0x8d, 0x81, 0x35, 0x6a, 0x6b, 0x94,
-	0x37, 0x4e, 0x71, 0x34, 0xdb, 0x74, 0x9f, 0x82, 0x55, 0x69, 0x41, 0x00, 0xcc, 0xd3, 0x09, 0x3d,
-	0x3b, 0xb9, 0xb6, 0x37, 0x88, 0x09, 0x35, 0x6f, 0x6c, 0x1b, 0xa4, 0x09, 0x8d, 0xc9, 0xd5, 0x3b,
-	0xcf, 0xae, 0xb9, 0x3f, 0x0d, 0x68, 0xe6, 0x1d, 0x08, 0x81, 0xc6, 0x82, 0x4b, 0x95, 0xb1, 0xd1,
-	0xeb, 0x84, 0xcc, 0x2d, 0xae, 0x34, 0x99, 0x16, 0x4d, 0x96, 0xa4, 0x0b, 0xe6, 0x92, 0x87, 0xc1,
-	0x74, 0xe5, 0xd4, 0x75, 0x32, 0x8b, 0xc8, 0xbf, 0xd0, 0x92, 0x81, 0x1f, 0x31, 0x15, 0x0b, 0x74,
-	0x1a, 0x7a, 0xab, 0x4c, 0x90, 0x27, 0xd0, 0xf9, 0x7a, 0x7c, 0xf7, 0xed, 0x44, 0xe0, 0x0c, 0x23,
-	0x15, 0xb0, 0xd0, 0xd9, 0xd4, 0x25, 0x0f, 0xb2, 0xa4, 0x07, 0xcd, 0x24, 0x73, 0xca, 0x14, 0x3a,
-	0xa6, 0xae, 0x28, 0x62, 0xf7, 0x7b, 0x0d, 0x3a, 0xe5, 0x25, 0xe8, 0x23, 0xff, 0x07, 0xa0, 0x8a,
-	0x4c, 0x76, 0xf0, 0x4a, 0x26, 0x69, 0xc7, 0x62, 0xb5, 0xd0, 0x5a, 0xa7, 0x1c, 0x8a, 0x98, 0xf4,
-	0xc1, 0x9a, 0x16, 0x83, 0x65, 0xc6, 0xa6, 0x9a, 0x22, 0x47, 0xd0, 0x92, 0x4a, 0x20, 0xbb, 0x9b,
-	0xcc, 0xa4, 0x63, 0xf7, 0xeb, 0x03, 0x6b, 0xe4, 0x6a, 0xd1, 0xd7, 0x4f, 0x31, 0xf4, 0xf2, 0xa2,
-	0xb3, 0x48, 0x89, 0x15, 0x2d, 0x41, 0x64, 0x1f, 0xb6, 0xb2, 0x2b, 0x74, 0xfa, 0x1a, 0x6f, 0x55,
-	0xae, 0x9a, 0xe6, 0x7b, 0xbd, 0x43, 0xe8, 0xac, 0xf7, 0xc8, 0x75, 0x37, 0x4a, 0xdd, 0x0b, 0x5f,
-	0xa6, 0x3c, 0xd2, 0xe0, 0x75, 0xed, 0xa5, 0xe1, 0x8e, 0xa1, 0x75, 0x9c, 0x90, 0xe2, 0xb7, 0x18,
-	0xe5, 0xee, 0x33, 0x0a, 0xf7, 0x95, 0x2e, 0xb5, 0x2b, 0x2e, 0x75, 0x17, 0xb0, 0xe5, 0xa1, 0x7f,
-	0xca, 0x14, 0xd3, 0x10, 0xbc, 0xd7, 0x90, 0x3a, 0x4d, 0x96, 0xda, 0x09, 0x4c, 0x2e, 0x32, 0x0f,
-	0xeb, 0x75, 0xde, 0xb8, 0x5e, 0x36, 0xae, 0x90, 0x6b, 0xfc, 0x99, 0x9c, 0x7b, 0x00, 0x7f, 0x17,
-	0x7a, 0xcd, 0x3c, 0xf4, 0xef, 0x30, 0x52, 0xf9, 0xdc, 0x58, 0x84, 0x39, 0xc7, 0x58, 0x84, 0xee,
-	0x47, 0x68, 0x17, 0xa5, 0xba, 0xe4, 0x05, 0x34, 0x65, 0x8a, 0x90, 0x8e, 0xa1, 0x67, 0xf4, 0xd6,
-	0x2f, 0xa0, 0xda, 0x90, 0x16, 0xb5, 0x8f, 0xbc, 0x41, 0x0e, 0x3b, 0x05, 0x88, 0xa2, 0x8c, 0x43,
-	0xf5, 0x08, 0xef, 0x2e, 0x6c, 0xa2, 0x10, 0x5c, 0xa4, 0x1a, 0x9f, 0x6f, 0xd0, 0x34, 0x24, 0x03,
-	0x68, 0xcc, 0x98, 0x62, 0x9a, 0xbc, 0x35, 0x22, 0xeb, 0x47, 0x48, 0x46, 0x9f, 0x6f, 0x50, 0x5d,
-	0xf1, 0xb6, 0x09, 0xa6, 0xd0, 0xdd, 0xdd, 0x03, 0xd8, 0xa1, 0xe8, 0x07, 0x52, 0x95, 0xff, 0x45,
-	0x17, 0x4c, 0x89, 0x53, 0x81, 0xf9, 0x13, 0xcb, 0x22, 0xf7, 0x03, 0xb4, 0x2f, 0xb8, 0x0a, 0xe6,
-	0xab, 0x8c, 0xcc, 0xef, 0xca, 0x24, 0x50, 0xc5, 0xe4, 0x6d, 0x76, 0x8b, 0x75, 0x9a, 0x45, 0x89,
-	0xc1, 0x97, 0x82, 0xcf, 0x83, 0x10, 0xa5, 0xb3, 0xab, 0xd9, 0x16, 0xf1, 0x48, 0xc0, 0xf6, 0xa5,
-	0x98, 0x2e, 0x50, 0x2a, 0xc1, 0x14, 0x17, 0xe4, 0x10, 0xda, 0xef, 0x51, 0x95, 0xde, 0x25, 0xdd,
-	0x07, 0x66, 0xce, 0xce, 0xd9, 0xfb, 0xeb, 0x11, 0x93, 0x93, 0xff, 0xa1, 0x91, 0xfc, 0x91, 0x24,
-	0xfd, 0x76, 0xf2, 0xef, 0xb2, 0xb7, 0x1e, 0x8e, 0x2e, 0x00, 0x2a, 0x03, 0x8e, 0x80, 0xe4, 0x1a,
-	0x54, 0xb2, 0x7b, 0x1a, 0xf2, 0x40, 0x9c, 0x5e, 0xaa, 0xea, 0x9a, 0x0e, 0xcf, 0x8d, 0x1b, 0x53,
-	0xff, 0xd2, 0xe3, 0x5f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x05, 0x24, 0xe5, 0xc4, 0xb9, 0x05, 0x00,
-	0x00,
 }
