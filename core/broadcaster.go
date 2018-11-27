@@ -3,7 +3,6 @@ package core
 import (
 	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/livepeer/go-livepeer/drivers"
 
@@ -18,7 +17,6 @@ var ErrNotFound = errors.New("ErrNotFound")
 
 type broadcaster struct {
 	node  *LivepeerNode
-	httpc *http.Client
 	jobId string // ANGIE - DO WE GET RID OF JOBS HERE AS WELL?
 	tinfo *net.TranscoderInfo
 	ios   drivers.OSSession
@@ -45,12 +43,6 @@ func (bcast *broadcaster) Sign(msg []byte) ([]byte, error) {
 }
 func (bcast *broadcaster) JobId() string {
 	return bcast.jobId
-}
-func (bcast *broadcaster) GetHTTPClient() *http.Client {
-	return bcast.httpc
-}
-func (bcast *broadcaster) SetHTTPClient(hc *http.Client) {
-	bcast.httpc = hc
 }
 func (bcast *broadcaster) GetTranscoderInfo() *net.TranscoderInfo {
 	return bcast.tinfo
