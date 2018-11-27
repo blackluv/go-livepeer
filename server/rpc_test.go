@@ -79,11 +79,6 @@ func StubOrchestrator() *stubOrchestrator {
 	return &stubOrchestrator{priv: pk, block: big.NewInt(5), jobId: StubJob()}
 }
 
-func (r *stubOrchestrator) GetHTTPClient() *http.Client {
-	return nil
-}
-func (r *stubOrchestrator) SetHTTPClient(ti *http.Client) {
-}
 func (r *stubOrchestrator) GetTranscoderInfo() *net.TranscoderInfo {
 	return nil
 }

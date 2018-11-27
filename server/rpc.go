@@ -46,6 +46,12 @@ const AuthType_LPE = "Livepeer-Eth-1"
 
 const JobOutOfRangeError = "Job out of range"
 
+var tlsConfig = &tls.Config{InsecureSkipVerify: true}
+var httpClient = &http.Client{
+	Transport: &http2.Transport{TLSClientConfig: tlsConfig},
+	Timeout:   HTTPTimeout,
+}
+
 type Orchestrator interface {
 	ServiceURI() *url.URL
 	Address() ethcommon.Address
@@ -61,8 +67,6 @@ type Orchestrator interface {
 type Broadcaster interface {
 	Sign([]byte) ([]byte, error)
 	JobId() string
-	SetHTTPClient(*http.Client)
-	GetHTTPClient() *http.Client
 	SetTranscoderInfo(*net.TranscoderInfo)
 	GetTranscoderInfo() *net.TranscoderInfo
 	SetOrchestratorOS(drivers.OSSession)
@@ -477,17 +481,10 @@ func StartBroadcastClient(bcast Broadcaster, orchestratorServer string) error {
 		return err
 	}
 	defer conn.Close()
-	tlsConfig := &tls.Config{InsecureSkipVerify: true}
-
-	httpc := &http.Client{
-		Transport: &http2.Transport{TLSClientConfig: tlsConfig},
-		Timeout:   HTTPTimeout,
-	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), GRPCTimeout)
 	defer cancel()
 
-	bcast.SetHTTPClient(httpc)
 	req, err := genTranscoderReq(bcast, bcast.JobId())
 	r, err := c.GetTranscoder(ctx, req)
 	if err != nil {
@@ -503,7 +500,6 @@ func SubmitSegment(bcast Broadcaster, seg *stream.HLSSegment, nonce uint64) (*ne
 	if monitor.Enabled {
 		monitor.SegmentUploadStart(nonce, seg.SeqNo)
 	}
-	hc := bcast.GetHTTPClient()
 	segData := &net.SegData{
 		Seq:  int64(seg.SeqNo),
 		Hash: crypto.Keccak256(seg.Data),
@@ -548,7 +544,7 @@ func SubmitSegment(bcast Broadcaster, seg *stream.HLSSegment, nonce uint64) (*ne
 
 	glog.Infof("Submitting segment %v : %v bytes", seg.SeqNo, len(data))
 	start := time.Now()
-	resp, err := hc.Do(req)
+	resp, err := httpClient.Do(req)
 	uploadDur := time.Since(start)
 	if err != nil {
 		glog.Error("Unable to submit segment ", seg.SeqNo, err)
