@@ -195,10 +195,11 @@ func verifyToken(orch Orchestrator, creds string) (string, error) {
 }
 
 func genSegCreds(sess *BroadcastSession, segData *net.SegData) (string, error) {
-	seg := &lpTypes.Segment{
-		StreamID:              "",
-		SegmentSequenceNumber: big.NewInt(segData.Seq),
-		DataHash:              ethcommon.BytesToHash(segData.Hash),
+	seg := &core.Segment{
+		ManifestID: sess.ManifestID,
+		Seq:        segData.Seq,
+		Hash:       ethcommon.BytesToHash(segData.Hash),
+		Profiles:   sess.Profiles,
 	}
 	sig, err := sess.Broadcaster.Sign(seg.Flatten())
 	if err != nil {
@@ -225,10 +226,21 @@ func verifySegCreds(orch Orchestrator, jobId string, segCreds string) (*net.SegD
 		glog.Error("Unable to unmarshal ", err)
 		return nil, err
 	}
-	seg := &lpTypes.Segment{
-		StreamID:              jobId,
-		SegmentSequenceNumber: big.NewInt(segData.Seq),
-		DataHash:              ethcommon.BytesToHash(segData.Hash),
+	profiles, err := common.BytesToVideoProfile(segData.Profiles)
+	if err != nil {
+		glog.Error("Unable to deserialize profiles ", err)
+		return nil, err
+	}
+	mid, err := core.MakeManifestID(segData.ManifestId)
+	if err != nil {
+		glog.Error("Unable to deserialize manifest ID ", err)
+		return nil, err
+	}
+	seg := &core.Segment{
+		ManifestID: mid,
+		Seq:        segData.Seq,
+		Hash:       ethcommon.BytesToHash(segData.Hash),
+		Profiles:   profiles,
 	}
 
 	if !verifyMsgSig(broadcasterAddress, string(seg.Flatten()), segData.Sig) {
@@ -489,8 +501,9 @@ func SubmitSegment(sess *BroadcastSession, seg *stream.HLSSegment, nonce uint64)
 		monitor.SegmentUploadStart(nonce, seg.SeqNo)
 	}
 	segData := &net.SegData{
-		Seq:  int64(seg.SeqNo),
-		Hash: crypto.Keccak256(seg.Data),
+		ManifestId: sess.ManifestID.GetVideoID(),
+		Seq:        int64(seg.SeqNo),
+		Hash:       crypto.Keccak256(seg.Data),
 	}
 	uploaded := seg.Name != "" // hijack seg.Name to convey the uploaded URI
 
