@@ -11,8 +11,8 @@ import (
 )
 
 type offchainOrchestrator struct {
-	uri  *url.URL
-	node *core.LivepeerNode
+	uri   *url.URL
+	bcast server.Broadcaster
 }
 
 func NewOffchainOrchestrator(node *core.LivepeerNode, address string) *offchainOrchestrator {
@@ -21,11 +21,11 @@ func NewOffchainOrchestrator(node *core.LivepeerNode, address string) *offchainO
 		glog.Error("Could not parse orchestrator URI: ", err)
 		return nil
 	}
-	return &offchainOrchestrator{node: node, uri: uri}
+	bcast := core.NewBroadcaster(node)
+	return &offchainOrchestrator{bcast: bcast, uri: uri}
 }
 
 func (o *offchainOrchestrator) GetOrchestrators(numOrchestrators int) ([]*net.TranscoderInfo, error) {
-	bcast := core.NewBroadcaster(o.node, "remove this param")
-	tinfo, err := server.GetOrchestratorInfo(bcast, o.uri)
+	tinfo, err := server.GetOrchestratorInfo(o.bcast, o.uri)
 	return []*net.TranscoderInfo{tinfo}, err
 }

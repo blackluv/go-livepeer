@@ -67,13 +67,16 @@ type Orchestrator interface {
 type Broadcaster interface {
 	Address() ethcommon.Address
 	Sign([]byte) ([]byte, error)
-	JobId() string
-	SetTranscoderInfo(*net.TranscoderInfo)
-	GetTranscoderInfo() *net.TranscoderInfo
-	SetOrchestratorOS(drivers.OSSession)
-	GetOrchestratorOS() drivers.OSSession
-	SetBroadcasterOS(drivers.OSSession)
-	GetBroadcasterOS() drivers.OSSession
+}
+
+// Session-specific state for broadcasters
+type BroadcastSession struct {
+	Broadcaster      Broadcaster
+	ManifestID       core.ManifestID
+	Profiles         []ffmpeg.VideoProfile
+	OrchestratorInfo *net.TranscoderInfo
+	OrchestratorOS   drivers.OSSession
+	BroadcasterOS    drivers.OSSession
 }
 
 func genTranscoderReq(b Broadcaster) (*net.TranscoderRequest, error) {
@@ -191,13 +194,13 @@ func verifyToken(orch Orchestrator, creds string) (string, error) {
 	return token.JobId, nil
 }
 
-func genSegCreds(bcast Broadcaster, streamId string, segData *net.SegData) (string, error) {
+func genSegCreds(sess *BroadcastSession, segData *net.SegData) (string, error) {
 	seg := &lpTypes.Segment{
-		StreamID:              streamId,
+		StreamID:              "",
 		SegmentSequenceNumber: big.NewInt(segData.Seq),
 		DataHash:              ethcommon.BytesToHash(segData.Hash),
 	}
-	sig, err := bcast.Sign(seg.Flatten())
+	sig, err := sess.Broadcaster.Sign(seg.Flatten())
 	if err != nil {
 		return "", nil
 	}
@@ -481,7 +484,7 @@ func GetOrchestratorInfo(bcast Broadcaster, orchestratorServer *url.URL) (*net.T
 	return r, nil
 }
 
-func SubmitSegment(bcast Broadcaster, seg *stream.HLSSegment, nonce uint64) (*net.TranscodeData, error) {
+func SubmitSegment(sess *BroadcastSession, seg *stream.HLSSegment, nonce uint64) (*net.TranscodeData, error) {
 	if monitor.Enabled {
 		monitor.SegmentUploadStart(nonce, seg.SeqNo)
 	}
@@ -492,11 +495,11 @@ func SubmitSegment(bcast Broadcaster, seg *stream.HLSSegment, nonce uint64) (*ne
 	uploaded := seg.Name != "" // hijack seg.Name to convey the uploaded URI
 
 	// send credentials for our own storage
-	if bos := bcast.GetBroadcasterOS(); bos != nil && bos.IsExternal() {
+	if bos := sess.BroadcasterOS; bos != nil && bos.IsExternal() {
 		segData.Storage = []*net.OSInfo{bos.GetInfo()}
 	}
 
-	segCreds, err := genSegCreds(bcast, bcast.JobId(), segData)
+	segCreds, err := genSegCreds(sess, segData)
 	if err != nil {
 		if monitor.Enabled {
 			monitor.LogSegmentUploadFailed(nonce, seg.SeqNo, err.Error())
@@ -508,7 +511,7 @@ func SubmitSegment(bcast Broadcaster, seg *stream.HLSSegment, nonce uint64) (*ne
 		data = []byte(seg.Name)
 	}
 
-	ti := bcast.GetTranscoderInfo()
+	ti := sess.OrchestratorInfo
 	req, err := http.NewRequest("POST", ti.Transcoder+"/segment", bytes.NewBuffer(data))
 	if err != nil {
 		glog.Error("Could not generate trascode request to ", ti.Transcoder)
