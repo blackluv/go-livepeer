@@ -46,6 +46,9 @@ const AuthType_LPE = "Livepeer-Eth-1"
 
 const JobOutOfRangeError = "Job out of range"
 
+var ErrSegSig = errors.New("ErrSegSig")
+var ErrSegEncoding = errors.New("ErrorSegEncoding")
+
 var tlsConfig = &tls.Config{InsecureSkipVerify: true}
 var httpClient = &http.Client{
 	Transport: &http2.Transport{TLSClientConfig: tlsConfig},
@@ -195,18 +198,37 @@ func verifyToken(orch Orchestrator, creds string) (string, error) {
 	return token.JobId, nil
 }
 
-func genSegCreds(sess *BroadcastSession, segData *net.SegData) (string, error) {
-	seg := &core.Segment{
+func genSegCreds(sess *BroadcastSession, seg *stream.HLSSegment) (string, error) {
+
+	// Generate signature for relevant parts of segment
+	hash := crypto.Keccak256(seg.Data)
+	md := &core.Segment{
 		ManifestID: sess.ManifestID,
-		Seq:        segData.Seq,
-		Hash:       ethcommon.BytesToHash(segData.Hash),
+		Seq:        int64(seg.SeqNo),
+		Hash:       ethcommon.BytesToHash(hash),
 		Profiles:   sess.Profiles,
 	}
-	sig, err := sess.Broadcaster.Sign(seg.Flatten())
+	sig, err := sess.Broadcaster.Sign(md.Flatten())
+	glog.Error("Signed segment data, err ", err)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
-	segData.Sig = sig
+
+	// Send credentials for our own storage
+	var storage []*net.OSInfo
+	if bos := sess.BroadcasterOS; bos != nil && bos.IsExternal() {
+		storage = []*net.OSInfo{bos.GetInfo()}
+	}
+
+	// Generate serialized segment info
+	segData := &net.SegData{
+		ManifestId: md.ManifestID.GetVideoID(),
+		Seq:        md.Seq,
+		Hash:       hash,
+		Profiles:   common.ProfilesToTranscodeOpts(sess.Profiles),
+		Sig:        sig,
+		Storage:    storage,
+	}
 	data, err := proto.Marshal(segData)
 	if err != nil {
 		glog.Error("Unable to marshal ", err)
@@ -219,7 +241,7 @@ func verifySegCreds(orch Orchestrator, jobId string, segCreds string) (*net.SegD
 	buf, err := base64.StdEncoding.DecodeString(segCreds)
 	if err != nil {
 		glog.Error("Unable to base64-decode ", err)
-		return nil, err
+		return nil, ErrSegEncoding
 	}
 	var segData net.SegData
 	err = proto.Unmarshal(buf, &segData)
@@ -246,7 +268,7 @@ func verifySegCreds(orch Orchestrator, jobId string, segCreds string) (*net.SegD
 
 	if !verifyMsgSig(broadcasterAddress, string(seg.Flatten()), segData.Sig) {
 		glog.Error("Sig check failed")
-		return nil, fmt.Errorf("Segment sig check failed")
+		return nil, ErrSegSig
 	}
 
 	return &segData, nil
@@ -501,19 +523,9 @@ func SubmitSegment(sess *BroadcastSession, seg *stream.HLSSegment, nonce uint64)
 	if monitor.Enabled {
 		monitor.SegmentUploadStart(nonce, seg.SeqNo)
 	}
-	segData := &net.SegData{
-		ManifestId: sess.ManifestID.GetVideoID(),
-		Seq:        int64(seg.SeqNo),
-		Hash:       crypto.Keccak256(seg.Data),
-	}
 	uploaded := seg.Name != "" // hijack seg.Name to convey the uploaded URI
 
-	// send credentials for our own storage
-	if bos := sess.BroadcasterOS; bos != nil && bos.IsExternal() {
-		segData.Storage = []*net.OSInfo{bos.GetInfo()}
-	}
-
-	segCreds, err := genSegCreds(sess, segData)
+	segCreds, err := genSegCreds(sess, seg)
 	if err != nil {
 		if monitor.Enabled {
 			monitor.LogSegmentUploadFailed(nonce, seg.SeqNo, err.Error())
