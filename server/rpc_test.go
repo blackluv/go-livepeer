@@ -24,12 +24,7 @@ import (
 type stubOrchestrator struct {
 	priv    *ecdsa.PrivateKey
 	block   *big.Int
-	jobId   string
 	signErr error
-}
-
-func StubJob() string {
-	return "iamajobstring"
 }
 
 func (r *stubOrchestrator) ServiceURI() *url.URL {
@@ -52,7 +47,7 @@ func (r *stubOrchestrator) Sign(msg []byte) ([]byte, error) {
 func (r *stubOrchestrator) Address() ethcommon.Address {
 	return ethcrypto.PubkeyToAddress(r.priv.PublicKey)
 }
-func (r *stubOrchestrator) TranscodeSeg(jobId int64, seg *core.SignedSegment) (*core.TranscodeResult, error) {
+func (r *stubOrchestrator) TranscodeSeg(jobId int64, segData *core.SegmentMetadata, hlsStream *stream.HLSSegment) (*core.TranscodeResult, error) {
 	return nil, nil
 }
 func (r *stubOrchestrator) StreamIDs(jobId string) ([]core.StreamID, error) {
@@ -64,7 +59,7 @@ func StubOrchestrator() *stubOrchestrator {
 	if err != nil {
 		return &stubOrchestrator{}
 	}
-	return &stubOrchestrator{priv: pk, block: big.NewInt(5), jobId: StubJob()}
+	return &stubOrchestrator{priv: pk, block: big.NewInt(5)}
 }
 
 func (r *stubOrchestrator) ServeTranscoder(stream net.Transcoder_RegisterTranscoderServer) {
@@ -114,9 +109,8 @@ func TestRPCTranscoderReq(t *testing.T) {
 func TestRPCCreds(t *testing.T) {
 
 	r := StubOrchestrator()
-	jobId := StubJob()
 
-	creds, err := genToken(r, jobId)
+	creds, err := genToken(r, "")
 	if err != nil {
 		t.Error("Unable to generate creds from req ", err)
 	}
@@ -162,7 +156,6 @@ func TestRPCSeg(t *testing.T) {
 
 	baddr := ethcrypto.PubkeyToAddress(b.priv.PublicKey)
 
-	jobId := StubJob()
 	broadcasterAddress = baddr
 
 	segData := &stream.HLSSegment{}
@@ -172,7 +165,7 @@ func TestRPCSeg(t *testing.T) {
 		t.Error("Unable to generate seg creds ", err)
 		return
 	}
-	if _, err := verifySegCreds(o, jobId, creds); err != nil {
+	if _, err := verifySegCreds(o, creds); err != nil {
 		t.Error("Unable to verify seg creds", err)
 		return
 	}
@@ -188,27 +181,27 @@ func TestRPCSeg(t *testing.T) {
 	oldAddr := broadcasterAddress
 	key, _ := ethcrypto.GenerateKey()
 	broadcasterAddress = ethcrypto.PubkeyToAddress(key.PublicKey)
-	if _, err := verifySegCreds(o, jobId, creds); err != ErrSegSig {
+	if _, err := verifySegCreds(o, creds); err != ErrSegSig {
 		t.Error("Unexpectedly verified seg creds: invalid bcast addr", err)
 	}
 	broadcasterAddress = oldAddr
 
 	// sanity check
-	if _, err := verifySegCreds(o, jobId, creds); err != nil {
+	if _, err := verifySegCreds(o, creds); err != nil {
 		t.Error("Sanity check failed", err)
 	}
 
 	// test corrupt creds
 	idx := len(creds) / 2
 	kreds := creds[:idx] + string(^creds[idx]) + creds[idx+1:]
-	if _, err := verifySegCreds(o, jobId, kreds); err != ErrSegEncoding {
+	if _, err := verifySegCreds(o, kreds); err != ErrSegEncoding {
 		t.Error("Unexpectedly verified bad creds", err)
 	}
 
 	corruptSegData := func(segData *net.SegData, expectedErr error) {
 		data, _ := proto.Marshal(segData)
 		creds = base64.StdEncoding.EncodeToString(data)
-		if _, err := verifySegCreds(o, jobId, creds); err != expectedErr {
+		if _, err := verifySegCreds(o, creds); err != expectedErr {
 			t.Errorf("Expected to fail with '%v' but got '%v'", expectedErr, err)
 		}
 	}

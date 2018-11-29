@@ -11,7 +11,7 @@ import (
 )
 
 func TestSegmentFlatten(t *testing.T) {
-	s := Segment{
+	s := SegmentMetadata{
 		ManifestID: ManifestID("abcdef"),
 		Seq:        1234,
 		Hash:       ethcommon.BytesToHash(ethcommon.RightPadBytes([]byte("browns"), 32)),

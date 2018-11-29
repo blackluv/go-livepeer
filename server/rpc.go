@@ -61,7 +61,7 @@ type Orchestrator interface {
 	TranscoderSecret() string
 	Sign([]byte) ([]byte, error)
 	CurrentBlock() *big.Int
-	TranscodeSeg(int64, *core.SignedSegment) (*core.TranscodeResult, error)
+	TranscodeSeg(int64, *core.SegmentMetadata, *stream.HLSSegment) (*core.TranscodeResult, error)
 	StreamIDs(string) ([]core.StreamID, error) // ANGIE - THIS NEEDS TO BE EDITED. WE MIGHT NEED TO GET STREAMIDS ELSEWHERE
 	ServeTranscoder(stream net.Transcoder_RegisterTranscoderServer)
 	TranscoderResults(job int64, res *core.RemoteTranscoderResult)
@@ -202,7 +202,7 @@ func genSegCreds(sess *BroadcastSession, seg *stream.HLSSegment) (string, error)
 
 	// Generate signature for relevant parts of segment
 	hash := crypto.Keccak256(seg.Data)
-	md := &core.Segment{
+	md := &core.SegmentMetadata{
 		ManifestID: sess.ManifestID,
 		Seq:        int64(seg.SeqNo),
 		Hash:       ethcommon.BytesToHash(hash),
@@ -237,7 +237,7 @@ func genSegCreds(sess *BroadcastSession, seg *stream.HLSSegment) (string, error)
 	return base64.StdEncoding.EncodeToString(data), nil
 }
 
-func verifySegCreds(orch Orchestrator, jobId string, segCreds string) (*net.SegData, error) {
+func verifySegCreds(orch Orchestrator, segCreds string) (*core.SegmentMetadata, error) {
 	buf, err := base64.StdEncoding.DecodeString(segCreds)
 	if err != nil {
 		glog.Error("Unable to base64-decode ", err)
@@ -259,11 +259,18 @@ func verifySegCreds(orch Orchestrator, jobId string, segCreds string) (*net.SegD
 		glog.Error("Unable to deserialize manifest ID ", err)
 		return nil, err
 	}
-	seg := &core.Segment{
+
+	var os *net.OSInfo
+	if len(segData.Storage) > 0 {
+		os = segData.Storage[0]
+	}
+
+	seg := &core.SegmentMetadata{
 		ManifestID: mid,
 		Seq:        segData.Seq,
 		Hash:       ethcommon.BytesToHash(segData.Hash),
 		Profiles:   profiles,
+		OS:         os,
 	}
 
 	if !verifyMsgSig(broadcasterAddress, string(seg.Flatten()), segData.Sig) {
@@ -271,7 +278,7 @@ func verifySegCreds(orch Orchestrator, jobId string, segCreds string) (*net.SegD
 		return nil, ErrSegSig
 	}
 
-	return &segData, nil
+	return seg, nil
 }
 
 func ping(context context.Context, req *net.PingPong, orch Orchestrator) (*net.PingPong, error) {
@@ -347,7 +354,7 @@ func (h *lphttp) ServeSegment(w http.ResponseWriter, r *http.Request) {
 	// check the segment sig from the broadcaster
 	seg := r.Header.Get("Livepeer-Segment")
 
-	segData, err := verifySegCreds(orch, jobId, seg) // ANGIE : NEED BROADCASTER ADDRESS FROM PM
+	segData, err := verifySegCreds(orch, seg) // ANGIE : NEED BROADCASTER ADDRESS FROM PM
 	if err != nil {
 		glog.Error("Could not verify segment creds")
 		http.Error(w, err.Error(), http.StatusForbidden)
@@ -384,7 +391,7 @@ func (h *lphttp) ServeSegment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	hash := crypto.Keccak256(data)
-	if !bytes.Equal(hash, segData.Hash) {
+	if !bytes.Equal(hash, segData.Hash.Bytes()) {
 		glog.Error("Mismatched hash for body; rejecting")
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
@@ -395,21 +402,15 @@ func (h *lphttp) ServeSegment(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.(http.Flusher).Flush()
 
-	var prefOS *net.OSInfo
-	if len(segData.Storage) > 0 {
-		prefOS = segData.Storage[0]
-	}
-	ss := core.SignedSegment{
-		Seg: stream.HLSSegment{
-			SeqNo: uint64(segData.Seq),
-			Data:  data,
-			Name:  uri,
-		},
-		Sig: segData.Sig,
-		OS:  prefOS,
+	hlsStream := stream.HLSSegment{
+		SeqNo: uint64(segData.Seq),
+		Data:  data,
+		Name:  uri,
 	}
 
-	res, err := orch.TranscodeSeg(int64(234), &ss) // ANGIE - NEED TO CHANGE ALL JOBIDS IN TRANSCODING LOOP INTO STRINGS
+	fmt.Print("jobId needs to be changed into string", jobId)
+	// res, err := orch.TranscodeSeg(int64(jobId), segData, &hlsStream) // ANGIE - NEED TO CHANGE ALL JOBIDS IN TRANSCODING LOOP INTO STRINGS
+	res, err := orch.TranscodeSeg(int64(123), segData, &hlsStream) // ANGIE - NEED TO CHANGE ALL JOBIDS IN TRANSCODING LOOP INTO STRINGS
 
 	// Upload to OS and construct segment result set
 	var segments []*net.TranscodedSegmentData
