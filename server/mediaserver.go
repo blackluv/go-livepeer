@@ -148,7 +148,7 @@ func createRTMPStreamIDHandler(s *LivepeerServer) func(url *url.URL) (strmID str
 	}
 }
 
-func (s *LivepeerServer) startBroadcast() (*BroadcastSession, error) {
+func (s *LivepeerServer) startBroadcast(cpl core.PlaylistManager) (*BroadcastSession, error) {
 
 	if s.LivepeerNode.OrchestratorSelector == nil {
 		return nil, ErrDiscovery
@@ -170,11 +170,11 @@ func (s *LivepeerServer) startBroadcast() (*BroadcastSession, error) {
 
 	return &BroadcastSession{
 		Broadcaster:      rpcBcast,
-		ManifestID:       s.CurrentPlaylist.ManifestID(),
+		ManifestID:       cpl.ManifestID(),
 		Profiles:         BroadcastJobVideoProfiles,
 		OrchestratorInfo: tinfo,
 		OrchestratorOS:   orchOS,
-		BroadcasterOS:    s.CurrentPlaylist.GetOSSession(),
+		BroadcasterOS:    cpl.GetOSSession(),
 	}, nil
 }
 
@@ -212,13 +212,11 @@ func gotRTMPStreamHandler(s *LivepeerServer) func(url *url.URL, rtmpStrm stream.
 			glog.V(common.SHORT).Infof("Cannot automatically detect the video profile - setting it to %v", vProfile)
 		}
 
-		jobStreamId := ""
 		startSeq := 0
-		var jobId string
 		var sess *BroadcastSession
 		var cpl core.PlaylistManager
 
-		if s.LivepeerNode.Eth != nil && jobId == "" {
+		if s.LivepeerNode.Eth != nil {
 
 			//Check if round is initialized
 			initialized, err := s.LivepeerNode.Eth.CurrentRoundInitialized()
@@ -260,12 +258,9 @@ func gotRTMPStreamHandler(s *LivepeerServer) func(url *url.URL, rtmpStrm stream.
 
 		//Create a HLS StreamID
 		//If streamID is passed in, use that one
-		//Else if we are reusing an active broadcast, use the old streamID
 		//Else generate a random ID
 		hlsStrmID := core.StreamID(url.Query().Get("hlsStrmID"))
-		if hlsStrmID == "" && jobId != "" && jobStreamId != "" {
-			hlsStrmID = core.StreamID(jobStreamId)
-		} else if hlsStrmID == "" {
+		if hlsStrmID == "" {
 			hlsStrmID, err = core.MakeStreamID(core.RandomVideoID(), vProfile.Name)
 			if err != nil {
 				glog.Errorf("Error making stream ID")
@@ -299,9 +294,9 @@ func gotRTMPStreamHandler(s *LivepeerServer) func(url *url.URL, rtmpStrm stream.
 					monitor.LogSegmentEmerged(nonce, seg.SeqNo)
 				}
 
-				if jobId != "" { // ANGIE - DATABASE.SETSEGMENTCOUNT NEEDS TO BE UPDATED TO TAKE A STRING
+				/*if jobId != "" { // ANGIE - DATABASE.SETSEGMENTCOUNT NEEDS TO BE UPDATED TO TAKE A STRING
 					s.LivepeerNode.Database.SetSegmentCount(jobId, int64(seg.SeqNo))
-				}
+				}*/
 
 				seg.Name = "" // hijack seg.Name to convey the uploaded URI
 				name := fmt.Sprintf("%s/%d.ts", vProfile.Name, seg.SeqNo)
@@ -468,7 +463,7 @@ func gotRTMPStreamHandler(s *LivepeerServer) func(url *url.URL, rtmpStrm stream.
 
 		s.broadcastRtmpToManifestMap[rtmpStrm.GetStreamID()] = string(mid)
 
-		if jobId == "" && s.LivepeerNode.Eth != nil {
+		if s.LivepeerNode.Eth != nil {
 			//Create Transcode Job Onchain
 			go func() {
 				if err != nil {
@@ -479,7 +474,7 @@ func gotRTMPStreamHandler(s *LivepeerServer) func(url *url.URL, rtmpStrm stream.
 				// as the RTMP stream is alive; maybe the orchestrator hasn't
 				// received the block containing the job yet
 				broadcastFunc := func() error {
-					sess, err = s.startBroadcast()
+					sess, err = s.startBroadcast(cpl)
 					if err == ErrDiscovery {
 						return err // discovery disabled, don't retry
 					} else if err != nil {
