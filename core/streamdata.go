@@ -1,17 +1,11 @@
 package core
 
 import (
-	"bytes"
-	"encoding/gob"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/rand"
 	"time"
-
-	"github.com/golang/glog"
-	"github.com/livepeer/go-livepeer/net"
-	"github.com/livepeer/lpms/stream"
 )
 
 var ErrStreamID = errors.New("ErrStreamID")
@@ -102,35 +96,4 @@ func (id *ManifestID) IsValid() bool {
 
 func (id ManifestID) String() string {
 	return string(id)
-}
-
-//Segment and its signature by the broadcaster
-type SignedSegment struct {
-	Seg stream.HLSSegment
-	Sig []byte
-	OS  *net.OSInfo
-}
-
-//Convenience function to convert between SignedSegments and byte slices to put on the wire.
-func SignedSegmentToBytes(ss SignedSegment) ([]byte, error) {
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	err := enc.Encode(ss)
-	if err != nil {
-		glog.Errorf("Error encoding segment to []byte: %v", err)
-		return nil, err
-	}
-	return buf.Bytes(), nil
-}
-
-//Convenience function to convert between SignedSegments and byte slices to put on the wire.
-func BytesToSignedSegment(data []byte) (SignedSegment, error) {
-	dec := gob.NewDecoder(bytes.NewReader(data))
-	var ss SignedSegment
-	err := dec.Decode(&ss)
-	if err != nil {
-		glog.Errorf("Error decoding byte array into segment: %v", err)
-		return SignedSegment{}, err
-	}
-	return ss, nil
 }
