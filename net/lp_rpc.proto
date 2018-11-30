@@ -74,17 +74,12 @@ message S3OSInfo {
   string xAmzDate = 6;
 }
 
-// The orchestrator sends this in response to `GetTranscoder`, containing the
-// transcoder URI, associated credentials authorizing the broadcaster to
-// use the transcoder, and miscellaneous data related to the job.
+// The orchestrator sends this in response to `GetOrchestrator`, containing
+// miscellaneous data related to the job.
 message OrchestratorInfo {
 
   // URI of the transcoder to use for submitting segments.
   string transcoder  = 1;
-
-  // Signals the authentication method to expect within `credentials`. This
-  // field is opaque to the broadcaster, and should be passed to the transcoder.
-  string authType    = 2;
 
   // Orchestrator returns info about own input object storage, if it wants it to be used.
   repeated OSInfo storage = 32;
