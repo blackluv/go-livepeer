@@ -31,13 +31,13 @@ type SegmentMetadata struct {
 	OS         *net.OSInfo
 }
 
-func (s *SegmentMetadata) Flatten() []byte {
-	profiles := common.ProfilesToHex(s.Profiles)
-	seq := big.NewInt(s.Seq).Bytes()
-	buf := make([]byte, len(s.ManifestID)+32+len(s.Hash.Bytes())+len(profiles))
-	i := copy(buf[0:], []byte(s.ManifestID))
+func (md *SegmentMetadata) Flatten() []byte {
+	profiles := common.ProfilesToHex(md.Profiles)
+	seq := big.NewInt(md.Seq).Bytes()
+	buf := make([]byte, len(md.ManifestID)+32+len(md.Hash.Bytes())+len(profiles))
+	i := copy(buf[0:], []byte(md.ManifestID))
 	i += copy(buf[i:], ethcommon.LeftPadBytes(seq, 32))
-	i += copy(buf[i:], s.Hash.Bytes())
+	i += copy(buf[i:], md.Hash.Bytes())
 	i += copy(buf[i:], []byte(profiles))
 	// i += copy(buf[i:], []byte(s.OS))
 	return buf

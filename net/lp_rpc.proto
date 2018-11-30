@@ -90,9 +90,6 @@ message OrchestratorInfo {
   // This field is opaque to the broadcaster.
   string credentials = 3;
 
-  // Transcoded streamId list to update the master manifest on the broadcaster.
-  map<string, string> streamIds = 16;
-
   // Orchestrator returns info about own input object storage, if it wants it to be used.
   repeated OSInfo storage = 32;
 }
