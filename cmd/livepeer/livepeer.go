@@ -383,11 +383,12 @@ func main() {
 			tc <- struct{}{}
 		}()
 
-		// check whether or not the transcoder is available
+		// check whether or not the orchestrator is available
 		time.Sleep(2 * time.Second)
-		transcoderAvailable := server.CheckTranscoderAvailability(orch)
-		if !transcoderAvailable {
-			// shut down transcoder
+		orchAvail := server.CheckOrchestratorAvailability(orch)
+		if !orchAvail {
+			// shut down orchestrator
+			glog.Info("Orchestrator not available at %v; shutting down", orch.ServiceURI())
 			tc <- struct{}{}
 		}
 
@@ -413,7 +414,7 @@ func main() {
 		glog.Infof("MediaServer Done()")
 		return
 	case <-tc:
-		glog.Infof("Transcoder server shut down")
+		glog.Infof("Orchestrator server shut down")
 	case <-wc:
 		glog.Infof("CLI webserver shut down")
 		return

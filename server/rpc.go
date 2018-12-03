@@ -89,7 +89,7 @@ func genTranscoderReq(b Broadcaster) (*net.OrchestratorRequest, error) {
 	return &net.OrchestratorRequest{Address: b.Address().Bytes(), Sig: sig}, nil
 }
 
-func CheckTranscoderAvailability(orch Orchestrator) bool {
+func CheckOrchestratorAvailability(orch Orchestrator) bool {
 	ts := time.Now()
 	ts_signature, err := orch.Sign([]byte(fmt.Sprintf("%v", ts)))
 	if err != nil {
