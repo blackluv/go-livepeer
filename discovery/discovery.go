@@ -16,7 +16,8 @@ type offchainOrchestrator struct {
 }
 
 func NewOffchainOrchestrator(node *core.LivepeerNode, address string) *offchainOrchestrator {
-	uri, err := url.Parse(address)
+	addr := "https://" + address
+	uri, err := url.ParseRequestURI(addr)
 	if err != nil {
 		glog.Error("Could not parse orchestrator URI: ", err)
 		return nil

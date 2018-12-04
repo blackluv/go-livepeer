@@ -225,7 +225,7 @@ func gotRTMPStreamHandler(s *LivepeerServer) func(url *url.URL, rtmpStrm stream.
 				return err
 			}
 			if !initialized {
-				glog.Infof("Round was uninitialized, can't create job. Please try again in a few blocks.")
+				glog.Infof("Round was uninitialized. Please try again in a few blocks.")
 				// todo send to metrics ?
 				return ErrRoundInit
 			}
